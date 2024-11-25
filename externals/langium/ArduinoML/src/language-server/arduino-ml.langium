@@ -25,7 +25,6 @@ Sensor :
 	
 State :
 	name=ID '{'
-		actions+=Action
 		(actions+=Action)* 
 		transition=Transition
 	'}';

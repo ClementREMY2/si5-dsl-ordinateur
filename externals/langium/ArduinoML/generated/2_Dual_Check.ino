@@ -29,25 +29,29 @@ long stateEntryTime = 0;
 
 				case off:
 					digitalWrite(11,LOW);
-				button1BounceGuard = millis() - button1LastDebounceTime > debounce;
-				button2BounceGuard = millis() - button2LastDebounceTime > debounce;
-			if ((digitalRead(9) == HIGH && button1BounceGuard) && (digitalRead(10) == HIGH && button2BounceGuard)) {
-				currentState = on;
-				stateEntryTime = millis();
-				button1LastDebounceTime = millis();
-				button2LastDebounceTime = millis();
-			}
+					button1BounceGuard = millis() - button1LastDebounceTime > debounce;
+					button2BounceGuard = millis() - button2LastDebounceTime > debounce;
+					if (button1BounceGuard && button2BounceGuard) {
+						if (digitalRead(9) == HIGH && digitalRead(10) == HIGH) {
+							currentState = on;
+							stateEntryTime = millis();
+							button1LastDebounceTime = millis();
+							button2LastDebounceTime = millis();
+						}
+					}
 				break;
 				case on:
 					digitalWrite(11,HIGH);
-				button1BounceGuard = millis() - button1LastDebounceTime > debounce;
-				button2BounceGuard = millis() - button2LastDebounceTime > debounce;
-			if ((digitalRead(9) == LOW && button1BounceGuard) || (digitalRead(10) == LOW && button2BounceGuard)) {
-				currentState = off;
-				stateEntryTime = millis();
-				button1LastDebounceTime = millis();
-				button2LastDebounceTime = millis();
-			}
+					button1BounceGuard = millis() - button1LastDebounceTime > debounce;
+					button2BounceGuard = millis() - button2LastDebounceTime > debounce;
+					if (button1BounceGuard && button2BounceGuard) {
+						if (digitalRead(9) == LOW || digitalRead(10) == LOW) {
+							currentState = off;
+							stateEntryTime = millis();
+							button1LastDebounceTime = millis();
+							button2LastDebounceTime = millis();
+						}
+					}
 				break;
 		}
 	}

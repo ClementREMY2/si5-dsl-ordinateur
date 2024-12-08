@@ -24,19 +24,21 @@ long stateEntryTime = 0;
 
 				case off:
 					digitalWrite(11,LOW);
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == HIGH && buttonBounceGuard)) {
-				currentState = on;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == HIGH) {
+							currentState = on;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case on:
 					digitalWrite(11,HIGH);
-			if ((currentTime - stateEntryTime >= 800)) {
-				currentState = off;
-				stateEntryTime = millis();
-			}
+						if ((currentTime - stateEntryTime >= 800)) {
+							currentState = off;
+							stateEntryTime = millis();
+						}
 				break;
 		}
 	}

@@ -15,7 +15,6 @@ long stateEntryTime = 0;
 	
 
 	void setup(){
-		pinMode(12, OUTPUT); // red_led [Actuator]
 		pinMode(11, OUTPUT); // buzzer [Actuator]
 		pinMode(9, INPUT); // button [Sensor]
 	}
@@ -24,11 +23,10 @@ long stateEntryTime = 0;
 			switch(currentState){
 
 				case off:
-					digitalWrite(12,LOW);
 					digitalWrite(11,LOW);
 					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
 					if (buttonBounceGuard) {
-						if (digitalRead(9) == HIGH) {
+						if (!(digitalRead(9) == LOW)) {
 							currentState = on;
 							stateEntryTime = millis();
 							buttonLastDebounceTime = millis();
@@ -36,16 +34,11 @@ long stateEntryTime = 0;
 					}
 				break;
 				case on:
-					digitalWrite(12,HIGH);
 					digitalWrite(11,HIGH);
-					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-					if (buttonBounceGuard) {
-						if (digitalRead(9) == LOW) {
+						if (!(!((digitalRead(9) == LOW)))) {
 							currentState = off;
 							stateEntryTime = millis();
-							buttonLastDebounceTime = millis();
 						}
-					}
 				break;
 		}
 	}

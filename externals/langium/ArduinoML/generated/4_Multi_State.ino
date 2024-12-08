@@ -26,55 +26,67 @@ long stateEntryTime = 0;
 				case start_off:
 					digitalWrite(12,LOW);
 					digitalWrite(11,LOW);
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == LOW && buttonBounceGuard)) {
-				currentState = off;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == LOW) {
+							currentState = off;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case off:
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == HIGH && buttonBounceGuard)) {
-				currentState = start_buzzing;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == HIGH) {
+							currentState = start_buzzing;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case start_buzzing:
 					digitalWrite(11,HIGH);
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == LOW && buttonBounceGuard)) {
-				currentState = buzzing;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == LOW) {
+							currentState = buzzing;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case buzzing:
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == HIGH && buttonBounceGuard)) {
-				currentState = start_led;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == HIGH) {
+							currentState = start_led;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case start_led:
 					digitalWrite(11,LOW);
 					digitalWrite(12,HIGH);
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == LOW && buttonBounceGuard)) {
-				currentState = led_on;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == LOW) {
+							currentState = led_on;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 				case led_on:
-				buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
-			if ((digitalRead(9) == HIGH && buttonBounceGuard)) {
-				currentState = start_off;
-				stateEntryTime = millis();
-				buttonLastDebounceTime = millis();
-			}
+					buttonBounceGuard = millis() - buttonLastDebounceTime > debounce;
+					if (buttonBounceGuard) {
+						if (digitalRead(9) == HIGH) {
+							currentState = start_off;
+							stateEntryTime = millis();
+							buttonLastDebounceTime = millis();
+						}
+					}
 				break;
 		}
 	}

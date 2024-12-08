@@ -181,7 +181,9 @@ function compileTemporalCondition(condition, fileNode) {
     fileNode.append(`(currentTime - stateEntryTime >= ${condition.time})`);
 }
 function compileCompositeUnaryExpression(expr, fileNode) {
-    fileNode.append(`!(`);
+    const isNegation = expr.operator.operator === 'not';
+    const operator = isNegation ? '!' : '';
+    fileNode.append(`${operator}(`);
     compilePrimaryExpression(expr.inner, fileNode);
     fileNode.append(`)`);
 }

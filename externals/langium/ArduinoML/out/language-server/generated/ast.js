@@ -4,7 +4,7 @@
  * DO NOT EDIT MANUALLY!
  ******************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reflection = exports.ArduinoMlAstReflection = exports.isCompositeBinaryExpression = exports.CompositeBinaryExpression = exports.isTransition = exports.Transition = exports.isTemporalCondition = exports.TemporalCondition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensorCondition = exports.SensorCondition = exports.isSensor = exports.Sensor = exports.isNestedExpression = exports.NestedExpression = exports.isExpression = exports.Expression = exports.isCompositeUnaryExpression = exports.CompositeUnaryExpression = exports.isBinaryOperator = exports.BinaryOperator = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isPrimaryExpression = exports.PrimaryExpression = exports.isBrick = exports.Brick = void 0;
+exports.reflection = exports.ArduinoMlAstReflection = exports.isCompositeBinaryExpression = exports.CompositeBinaryExpression = exports.isUnaryOperator = exports.UnaryOperator = exports.isTransition = exports.Transition = exports.isTemporalCondition = exports.TemporalCondition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensorCondition = exports.SensorCondition = exports.isSensor = exports.Sensor = exports.isNestedExpression = exports.NestedExpression = exports.isExpression = exports.Expression = exports.isCompositeUnaryExpression = exports.CompositeUnaryExpression = exports.isBinaryOperator = exports.BinaryOperator = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isPrimaryExpression = exports.PrimaryExpression = exports.isBrick = exports.Brick = void 0;
 /* eslint-disable */
 const langium_1 = require("langium");
 exports.Brick = 'Brick';
@@ -82,6 +82,11 @@ function isTransition(item) {
     return exports.reflection.isInstance(item, exports.Transition);
 }
 exports.isTransition = isTransition;
+exports.UnaryOperator = 'UnaryOperator';
+function isUnaryOperator(item) {
+    return exports.reflection.isInstance(item, exports.UnaryOperator);
+}
+exports.isUnaryOperator = isUnaryOperator;
 exports.CompositeBinaryExpression = 'CompositeBinaryExpression';
 function isCompositeBinaryExpression(item) {
     return exports.reflection.isInstance(item, exports.CompositeBinaryExpression);
@@ -89,7 +94,7 @@ function isCompositeBinaryExpression(item) {
 exports.isCompositeBinaryExpression = isCompositeBinaryExpression;
 class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
     getAllTypes() {
-        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
     }
     computeIsSubtype(subtype, supertype) {
         switch (subtype) {

@@ -61,7 +61,10 @@ TemporalCondition:
 	'wait' time=INT 'ms';
 
 CompositeUnaryExpression:
-    'not' inner=PrimaryExpression;
+    operator=UnaryOperator inner=PrimaryExpression;
+
+UnaryOperator:
+	operator='not';
 
 Signal:
     value=(HIGH | LOW);

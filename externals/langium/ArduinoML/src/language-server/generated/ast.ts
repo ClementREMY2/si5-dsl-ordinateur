@@ -78,6 +78,7 @@ export interface CompositeUnaryExpression extends AstNode {
     readonly $container: CompositeUnaryExpression | Expression;
     readonly $type: 'CompositeUnaryExpression';
     inner: PrimaryExpression
+    operator: UnaryOperator
 }
 
 export const CompositeUnaryExpression = 'CompositeUnaryExpression';
@@ -187,6 +188,18 @@ export function isTransition(item: unknown): item is Transition {
     return reflection.isInstance(item, Transition);
 }
 
+export interface UnaryOperator extends AstNode {
+    readonly $container: CompositeUnaryExpression;
+    readonly $type: 'UnaryOperator';
+    operator: 'not'
+}
+
+export const UnaryOperator = 'UnaryOperator';
+
+export function isUnaryOperator(item: unknown): item is UnaryOperator {
+    return reflection.isInstance(item, UnaryOperator);
+}
+
 export interface CompositeBinaryExpression extends Expression {
     readonly $container: CompositeBinaryExpression | NestedExpression | Transition;
     readonly $type: 'CompositeBinaryExpression';
@@ -217,12 +230,13 @@ export interface ArduinoMlAstType {
     State: State
     TemporalCondition: TemporalCondition
     Transition: Transition
+    UnaryOperator: UnaryOperator
 }
 
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {

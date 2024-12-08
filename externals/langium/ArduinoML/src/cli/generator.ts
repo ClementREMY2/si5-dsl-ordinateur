@@ -225,7 +225,9 @@ long stateEntryTime = 0;
 	}
 
 	function compileCompositeUnaryExpression(expr: CompositeUnaryExpression, fileNode: CompositeGeneratorNode) {
-		fileNode.append(`!(`);
+		const isNegation = expr.operator.operator === 'not';
+		const operator = isNegation ? '!' : '';
+		fileNode.append(`${operator}(`);
 		compilePrimaryExpression(expr.inner, fileNode);
 		fileNode.append(`)`);
 	}

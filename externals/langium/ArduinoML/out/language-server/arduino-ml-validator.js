@@ -193,13 +193,13 @@ class ArduinoMlValidator {
                 if ((0, ast_1.isSensor)(pinBrick)) {
                     const pin = pinBrick.inputPin;
                     if (allocatedPinsForBus.includes(pin)) {
-                        accept('error', `Pin ${pin} is already allocated by bus ${bus}. (Taken pins : ${allocatedPinsForBus.join(',')})`, { node: pinBrick, property: 'inputPin' });
+                        accept('error', `Pin ${pin} is already allocated to bus ${bus}.`, { node: pinBrick, property: 'inputPin' });
                     }
                 }
                 else if ((0, ast_1.isActuator)(pinBrick)) {
                     const pin = pinBrick.outputPin;
                     if (allocatedPinsForBus.includes(pin)) {
-                        accept('error', `Pin ${pin} is already allocated by bus ${bus}. (Taken pins : ${allocatedPinsForBus.join(',')})`, { node: pinBrick, property: 'outputPin' });
+                        accept('error', `Pin ${pin} is already allocated to bus ${bus}.`, { node: pinBrick, property: 'outputPin' });
                     }
                 }
             });

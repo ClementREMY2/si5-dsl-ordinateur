@@ -123,8 +123,8 @@ function compileState(state, fileNode) {
     for (const action of state.actions) {
         compileAction(action, fileNode);
     }
-    if (state.transition !== null) {
-        compileTransition(state.transition, fileNode);
+    if (state.transitions !== null) {
+        state.transitions.forEach(transition => compileTransition(transition, fileNode));
     }
     fileNode.append(`
 				break;`);

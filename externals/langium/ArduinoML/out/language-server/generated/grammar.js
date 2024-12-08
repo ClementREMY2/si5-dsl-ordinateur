@@ -389,8 +389,8 @@ const ArduinoMlGrammar = () => loadedArduinoMlGrammar !== null && loadedArduinoM
           },
           {
             "$type": "Assignment",
-            "feature": "transition",
-            "operator": "=",
+            "feature": "transitions",
+            "operator": "+=",
             "terminal": {
               "$type": "RuleCall",
               "rule": {
@@ -398,6 +398,19 @@ const ArduinoMlGrammar = () => loadedArduinoMlGrammar !== null && loadedArduinoM
               },
               "arguments": []
             }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "transitions",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@12"
+              },
+              "arguments": []
+            },
+            "cardinality": "*"
           },
           {
             "$type": "Keyword",

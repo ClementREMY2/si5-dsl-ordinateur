@@ -33,7 +33,9 @@ Screen:
 State :
 	name=ID '{'
 		(actions+=Action)* 
-		transition=Transition
+		transitions+=Transition
+		(transitions+=Transition)*
+
 	'}';
 
 

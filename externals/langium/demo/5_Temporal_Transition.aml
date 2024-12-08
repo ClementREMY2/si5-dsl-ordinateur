@@ -11,6 +11,7 @@ app RedButton initial state off {
 		on {
 			buzzer <= HIGH
 			wait 800 ms => off
+			button is LOW => off
 		}
 }
 

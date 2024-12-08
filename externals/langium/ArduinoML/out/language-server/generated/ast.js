@@ -200,7 +200,8 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
                 return {
                     name: 'State',
                     mandatory: [
-                        { name: 'actions', type: 'array' }
+                        { name: 'actions', type: 'array' },
+                        { name: 'transitions', type: 'array' }
                     ]
                 };
             }

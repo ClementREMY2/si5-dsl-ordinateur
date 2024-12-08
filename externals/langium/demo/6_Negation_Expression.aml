@@ -1,0 +1,16 @@
+app RedButton initial state off {
+	bricks
+		Actuator buzzer : 11
+		Sensor button : 9
+	
+	states
+		off {
+			buzzer <= LOW
+			not button is LOW => on
+		}
+		on {
+			buzzer <= HIGH
+			not button is HIGH => off
+		}
+}
+

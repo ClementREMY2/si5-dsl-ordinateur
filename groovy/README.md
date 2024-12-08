@@ -31,7 +31,7 @@ initial off
 from on to off when button becomes high
 from off to on when button becomes high
 
-export "Switch!"
+export "Scenario1!"
 ```
 
 ## Another example
@@ -49,7 +49,7 @@ initial off
 from on to off when button becomes high
 from off to on when button becomes high
 
-export "Switch!"
+export "Scenario1!"
 ```
 
 ## An even better example with latest commit, to allow using "" to access values, making the syntax more homogeneous:
@@ -67,7 +67,7 @@ initial "off"
 from "on" to "off" when "button" becomes "high"
 from "off" to "on" when "button" becomes "high"
 
-export "Switch!"
+export "Scenario1!"
 ```
 
 ## Requirements

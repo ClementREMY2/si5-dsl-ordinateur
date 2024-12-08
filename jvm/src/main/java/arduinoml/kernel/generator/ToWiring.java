@@ -27,6 +27,7 @@ public class ToWiring extends Visitor<StringBuffer> {
 		w(String.format("// Application name: %s\n", app.getName())+"\n");
 
 		w("long debounce = 200;\n");
+		w("long startTime = millis();\n");
 		w("\nenum STATE {");
 		String sep ="";
 		for(State state: app.getStates()){
@@ -93,6 +94,7 @@ public class ToWiring extends Visitor<StringBuffer> {
 		}
 		if(context.get("pass") == PASS.TWO) {
 			w("\t\tcase " + state.getName() + ":\n");
+			w("\t\t\tbuttonBounceGuard = millis() -  buttonLastDebounceTime > debounce;\n");
 			for (Action action : state.getActions()) {
 				action.accept(this);
 			}
@@ -116,7 +118,23 @@ public class ToWiring extends Visitor<StringBuffer> {
 		if(context.get("pass") == PASS.TWO) {
 			w("\t\t\tif(");
 			transition.getCondition().accept(this);
-			w(") {\n");
+			w(" && buttonBounceGuard ) {\n");
+			w("\t\t\t\tstartTime = millis();\n");
+			if(transition.getCondition() instanceof SensorCondition){
+				SensorCondition sensorCondition = (SensorCondition) transition.getCondition();
+				w(String.format("\t\t\t\t %sLastDebounceTime = millis();\n", sensorCondition.getSensor().getName()));
+			}
+			else if(transition.getCondition() instanceof CompositeBinaryExpression){
+				CompositeBinaryExpression compositeBinaryExpression = (CompositeBinaryExpression) transition.getCondition();
+				if(compositeBinaryExpression.getLeft() instanceof SensorCondition){
+					SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getLeft();
+					w(String.format("\t\t\t\t %sLastDebounceTime = millis();\n", sensorCondition.getSensor().getName()));
+				}
+				if(compositeBinaryExpression.getRight() instanceof SensorCondition){
+					SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getRight();
+					w(String.format("\t\t\t\t %sLastDebounceTime = millis();\n", sensorCondition.getSensor().getName()));
+				}
+			}
 			w("\t\t\t\tcurrentState = " + transition.getNext().getName() + ";\n");
 			w("\t\t\t}\n");
 			return;

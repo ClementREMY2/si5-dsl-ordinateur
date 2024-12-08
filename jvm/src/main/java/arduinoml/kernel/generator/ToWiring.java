@@ -4,6 +4,9 @@ import io.github.mosser.arduinoml.kernel.App;
 import io.github.mosser.arduinoml.kernel.behavioral.*;
 import io.github.mosser.arduinoml.kernel.structural.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Quick and dirty visitor to support the generation of Wiring code
  */
@@ -94,7 +97,30 @@ public class ToWiring extends Visitor<StringBuffer> {
 		}
 		if(context.get("pass") == PASS.TWO) {
 			w("\t\tcase " + state.getName() + ":\n");
-			w("\t\t\tbuttonBounceGuard = millis() -  buttonLastDebounceTime > debounce;\n");
+			List<Sensor> sensors = new ArrayList<>();
+			for (Transition transition : state.getTransitions()) {
+				Expression condition = transition.getCondition();
+				if(condition instanceof SensorCondition){
+					SensorCondition sensorCondition = (SensorCondition) condition;
+					sensors.add(sensorCondition.getSensor());
+				}
+				else if(condition instanceof CompositeBinaryExpression){
+					CompositeBinaryExpression compositeBinaryExpression = (CompositeBinaryExpression) condition;
+					if(compositeBinaryExpression.getLeft() instanceof SensorCondition){
+						SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getLeft();
+						sensors.add(sensorCondition.getSensor());
+					}
+					if(compositeBinaryExpression.getRight() instanceof SensorCondition){
+						SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getRight();
+						sensors.add(sensorCondition.getSensor());
+					}
+				}
+
+			}
+			for(Sensor sensor: sensors){
+				w(String.format("\t\t\t%sBounceGuard = millis() - %sLastDebounceTime > debounce;\n",
+						sensor.getName(), sensor.getName()));
+			}
 			for (Action action : state.getActions()) {
 				action.accept(this);
 			}
@@ -118,7 +144,23 @@ public class ToWiring extends Visitor<StringBuffer> {
 		if(context.get("pass") == PASS.TWO) {
 			w("\t\t\tif(");
 			transition.getCondition().accept(this);
-			w(" && buttonBounceGuard ) {\n");
+//			w(" && buttonBounceGuard ) {\n");
+			if(transition.getCondition() instanceof SensorCondition){
+				SensorCondition sensorCondition = (SensorCondition) transition.getCondition();
+				w(String.format(" && %sBounceGuard", sensorCondition.getSensor().getName()));
+			}
+			else if(transition.getCondition() instanceof CompositeBinaryExpression){
+				CompositeBinaryExpression compositeBinaryExpression = (CompositeBinaryExpression) transition.getCondition();
+				if(compositeBinaryExpression.getLeft() instanceof SensorCondition){
+					SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getLeft();
+					w(String.format(" && %sBounceGuard ", sensorCondition.getSensor().getName()));
+				}
+				if(compositeBinaryExpression.getRight() instanceof SensorCondition){
+					SensorCondition sensorCondition = (SensorCondition) compositeBinaryExpression.getRight();
+					w(String.format(" && %sBounceGuard ", sensorCondition.getSensor().getName()));
+				}
+			}
+			w(") {\n");
 			w("\t\t\t\tstartTime = millis();\n");
 			if(transition.getCondition() instanceof SensorCondition){
 				SensorCondition sensorCondition = (SensorCondition) transition.getCondition();

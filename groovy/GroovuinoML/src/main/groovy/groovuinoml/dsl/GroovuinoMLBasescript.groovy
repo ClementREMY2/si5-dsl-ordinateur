@@ -58,7 +58,6 @@ abstract class GroovuinoMLBasescript extends Script {
 			def closure
 			closure = { sensor ->
 				[becomes: { signal ->
-					System.out.println("operator : " + context.operator)
 					SensorCondition expression = new SensorCondition()
 					expression.setSensor(sensor instanceof String ? (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(sensor) : (Sensor)sensor)
 					expression.setSignal(signal instanceof String ? (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signal) : (SIGNAL)signal)

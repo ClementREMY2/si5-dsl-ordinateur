@@ -34,16 +34,34 @@ Action :
 	actuator=[Actuator:ID] '<=' value=Signal;
 
 Transition :
-	condition=LogicalExpression '=>' next=[State:ID];
+	condition=Expression '=>' next=[State:ID];
 
-LogicalExpression:
-	sensor=[Sensor:ID] 'is' value=Signal (AndLogicalExpression | OrLogicalExpression)?;
+Expression:
+    operand=PrimaryExpression CompositeBinaryExpression?;
 
-AndLogicalExpression:
-	'and' next=LogicalExpression;
+CompositeBinaryExpression:
+	operator=BinaryOperator rightOperand=Expression;
 
-OrLogicalExpression:
-	'or' next=LogicalExpression;
+PrimaryExpression:
+    SensorCondition 
+    | TemporalCondition
+    | CompositeUnaryExpression
+    | NestedExpression;
+
+NestedExpression:
+	'(' nested=Expression ')';
+
+BinaryOperator:
+	operator=('and' | 'or');
+
+SensorCondition:
+    sensor=[Sensor:ID] 'is' value=Signal;
+
+TemporalCondition:
+	'wait' time=INT 'ms';
+
+CompositeUnaryExpression:
+    'not' inner=PrimaryExpression;
 
 Signal:
     value=(HIGH | LOW);

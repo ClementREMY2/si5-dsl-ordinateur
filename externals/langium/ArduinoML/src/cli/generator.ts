@@ -1,7 +1,25 @@
 import fs from 'fs';
 import { CompositeGeneratorNode, NL, toString } from 'langium';
 import path from 'path';
-import { Action, Actuator, App, Sensor, State, Transition, LogicalExpression, isAndLogicalExpression, AndLogicalExpression, OrLogicalExpression } from '../language-server/generated/ast';
+import {
+	Action,
+	Actuator,
+	App,
+	Sensor,
+	State,
+	Transition,
+	Expression,
+	isSensorCondition,
+	SensorCondition,
+	isTemporalCondition,
+	TemporalCondition,
+	isCompositeBinaryExpression,
+	CompositeUnaryExpression,
+	isCompositeUnaryExpression,
+	PrimaryExpression,
+	NestedExpression,
+	isNestedExpression,
+} from '../language-server/generated/ast';
 import { extractDestinationAndName } from './cli-util';
 
 export function generateInoFile(app: App, filePath: string, destination: string | undefined): string {
@@ -37,12 +55,18 @@ STATE currentState = `+app.initial.ref?.name+`;`
             fileNode.append(`
 bool `+brick.name+`BounceGuard = false;
 long `+brick.name+`LastDebounceTime = 0;
-
             `,NL);
         }
     }
+
+	// State entry time for temporal transitions
+	fileNode.append(`
+long stateEntryTime = 0;
+	`, NL);
+
     fileNode.append(`
 	void setup(){`);
+
     for(const brick of app.bricks){
         if ("inputPin" in brick){
        		compileSensor(brick,fileNode);
@@ -55,6 +79,7 @@ long `+brick.name+`LastDebounceTime = 0;
     fileNode.append(`
 	}
 	void loop() {
+		long currentTime = millis();
 			switch(currentState){`,NL)
 			for(const state of app.states){
 				compileState(state, fileNode)
@@ -99,32 +124,86 @@ long `+brick.name+`LastDebounceTime = 0;
 	}
 
 	function compileTransition(transition: Transition, fileNode: CompositeGeneratorNode) {
+		const sensors = getAllUniqueSensors(transition.condition);
+		compileDebouneGuard(sensors, fileNode);
+
 		fileNode.append(`
-			${getDebounceGuard(transition.condition)}
-			if (${getExpression(transition.condition)}) {
+			if (`);
+		compileExpression(transition.condition, fileNode);
+
+		fileNode.append(`) {
 				currentState = ${transition.next.ref?.name};
-				${getDebounceTime(transition.condition)}
-			}
-		`);
+				stateEntryTime = millis();`);
+		compileDebounceTime(sensors, fileNode);
+
+		fileNode.append(`
+			}`);
 	}
 
-	function getDebounceGuard(expr: LogicalExpression): string {
-		const castedExpr = isAndLogicalExpression(expr) ? expr as AndLogicalExpression : expr as OrLogicalExpression;
-		return (`
-				${expr.sensor.ref?.name}BounceGuard = millis() - ${expr.sensor.ref?.name}LastDebounceTime > debounce;
-				${castedExpr.next ? getDebounceGuard(castedExpr.next) : ''}
-			`);
+
+	function compileExpression(expr: Expression, fileNode: CompositeGeneratorNode) {
+		compilePrimaryExpression(expr.operand, fileNode);
+		if (isCompositeBinaryExpression(expr)) {
+			const isAnd = expr.operator.operator === 'and';
+			fileNode.append(isAnd ? ' && ' : ' || ');
+			compileExpression(expr.rightOperand, fileNode);
+		}
 	}
 
-	function getDebounceTime(expr: LogicalExpression): string {
-		const castedExpr = isAndLogicalExpression(expr) ? expr as AndLogicalExpression : expr as OrLogicalExpression;
-		return (`
-				${expr.sensor.ref?.name}LastDebounceTime = millis();
-				${castedExpr.next ? getDebounceTime(castedExpr.next) : ''}
-			`);
+	function compilePrimaryExpression(expr: PrimaryExpression, fileNode: CompositeGeneratorNode) {
+		if (isSensorCondition(expr)) {
+			compileSensorCondition(expr, fileNode);
+		} else if (isTemporalCondition(expr)) {
+			compileTemporalCondition(expr, fileNode);
+		} else if (isCompositeUnaryExpression(expr)) {
+			compileCompositeUnaryExpression(expr, fileNode);
+		} else if (isNestedExpression(expr)) {
+			compileNestedExpression(expr, fileNode);
+		}
 	}
 
-	function getExpression(expr: LogicalExpression): string {
-		const castedExpr = isAndLogicalExpression(expr) ? expr as AndLogicalExpression : expr as OrLogicalExpression;
-		return (`(digitalRead(${expr.sensor.ref?.inputPin}) == ${expr.value.value} && ${expr.sensor.ref?.name}BounceGuard)${castedExpr.next ? ` ${isAndLogicalExpression(expr) ? '&&' : '||'} ${getExpression(castedExpr.next)}`: ''}`);
+	function compileSensorCondition(condition: SensorCondition, fileNode: CompositeGeneratorNode) {
+		fileNode.append(`(digitalRead(${condition.sensor.ref?.inputPin}) == ${condition.value.value} && ${condition.sensor.ref?.name}BounceGuard)`);
 	}
+
+	function compileNestedExpression(expr: NestedExpression, fileNode: CompositeGeneratorNode) {
+		fileNode.append(`(`);
+		compileExpression(expr.nested, fileNode);
+		fileNode.append(`)`);
+	}
+
+	function getAllUniqueSensors(expr: Expression): Sensor[] {
+		const sensors: Sensor[] = [];
+		if (isSensorCondition(expr.operand)) {
+			const sensorCondition = expr.operand as SensorCondition;
+			if (sensorCondition.sensor.ref) sensors.push(sensorCondition.sensor.ref);
+		}
+		if (isCompositeBinaryExpression(expr)) {
+			sensors.push(...getAllUniqueSensors(expr.rightOperand));
+		}
+		if (isNestedExpression(expr.operand)) {
+			sensors.push(...getAllUniqueSensors((expr.operand as NestedExpression).nested));
+		}
+		// Set to remove duplicates
+		return [...new Set(sensors)];
+	}
+
+	function compileDebouneGuard(sensors: Sensor[], fileNode: CompositeGeneratorNode) {
+		for (const sensor of sensors) {
+			fileNode.append(`
+				${sensor.name}BounceGuard = millis() - ${sensor.name}LastDebounceTime > debounce;`);
+		}
+	}
+
+	function compileDebounceTime(sensors: Sensor[], fileNode: CompositeGeneratorNode) {
+		for (const sensor of sensors) {
+			fileNode.append(`
+				${sensor.name}LastDebounceTime = millis();`);
+		}
+	}
+
+	function compileTemporalCondition(condition: TemporalCondition, fileNode: CompositeGeneratorNode) {
+		fileNode.append(`(currentTime - stateEntryTime >= ${condition.time})`);
+	}
+
+	function compileCompositeUnaryExpression(expr: CompositeUnaryExpression, fileNode: CompositeGeneratorNode) {}

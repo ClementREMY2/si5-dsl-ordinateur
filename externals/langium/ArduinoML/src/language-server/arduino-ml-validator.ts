@@ -1,14 +1,17 @@
 import { ValidationAcceptor, ValidationChecks } from 'langium';
 import {
-    ArduinoMlAstType,
     App,
-    Expression,
-    isTemporalCondition,
-    isCompositeBinaryExpression,
+    ArduinoMlAstType,
     CompositeUnaryExpression,
-    NestedExpression,
+    Expression,
+    isCompositeBinaryExpression,
     isCompositeUnaryExpression,
     isNestedExpression,
+    isSensorCondition,
+    isTemporalCondition,
+    NestedExpression,
+    Sensor,
+    SensorCondition,
 } from './generated/ast';
 import type { ArduinoMlServices } from './arduino-ml-module';
 
@@ -22,7 +25,8 @@ export function registerValidationChecks(services: ArduinoMlServices) {
         // Check if app name starts with a capital letter
         App: validator.checkNothing,
         // Prevent use of multiple "wait" at the same level of a binary expression
-        Expression: validator.checkTemporalTransitionCombination,
+        // Prevent use of the same sensor at the same level of a binary expression
+        Expression: validator.checkExpresison,
         // Prevent negation of temporal transition
         // Check for double negation
         CompositeUnaryExpression: validator.checkCompositeUnaryExpression,
@@ -37,6 +41,7 @@ export function registerValidationChecks(services: ArduinoMlServices) {
  */
 export class ArduinoMlValidator {
 
+    // Check if app name starts with a capital letter
     checkNothing(app: App, accept: ValidationAcceptor): void {
         if (app.name) {
             const firstChar = app.name.substring(0, 1);
@@ -46,6 +51,7 @@ export class ArduinoMlValidator {
         }
     }
 
+    // Prevent use of multiple "wait" at the same level of a binary expression
     checkTemporalTransitionCombination(expression: Expression, accept: ValidationAcceptor): void {
         // Count number of temporal transition
         const countTemporalTransition = (expression: Expression): number => {
@@ -65,6 +71,7 @@ export class ArduinoMlValidator {
         }
     }
 
+    // Prevent use of the same sensor at the same level of a binary expression
     checkCompositeUnaryExpression(expr: CompositeUnaryExpression, accept: ValidationAcceptor): void {
         // Prevent negation of temporal transition
         this.checkNegationTemporalTransition(expr, accept);
@@ -72,6 +79,39 @@ export class ArduinoMlValidator {
         this.checkDoubleNegation(expr, accept);
     }
 
+    checkExpresison(expr: Expression, accept: ValidationAcceptor): void {
+        // Prevent use of multiple "wait" at the same level of a binary expression
+        this.checkTemporalTransitionCombination(expr, accept);
+        // Prevent use of the same sensor at the same level of a binary expression
+        this.checkSensorCombination(expr, accept);
+    }
+
+    checkSensorCombination(expression: Expression, accept: ValidationAcceptor): void {
+        const isOperandSensorCondition = isSensorCondition(expression.operand);
+        const isExpresionCompositeBinary = isCompositeBinaryExpression(expression);
+        if (isOperandSensorCondition && isExpresionCompositeBinary) {
+            const containSameSensor = (expression: Expression, sensor: Sensor): boolean => {
+                if (isSensorCondition(expression.operand) && expression.operand.sensor.ref === sensor) {
+                    return true;
+                }
+                if (isCompositeBinaryExpression(expression)) {
+                    const res = containSameSensor(expression.rightOperand, sensor);
+                    if (res) return true;
+                }
+                return false;
+            }
+
+            const sensor = (expression.operand as SensorCondition).sensor.ref;
+            if (sensor) {
+                const containSame = containSameSensor(expression.rightOperand, sensor);
+                if (containSame) {
+                    accept('error', 'Same sensor cannot be used twice at the same level of a binary expression.', { node: expression, property: 'operand' });
+                }
+            }
+        }
+    }
+
+    // Prevent negation of temporal transition
     checkNegationTemporalTransition(expr: CompositeUnaryExpression, accept: ValidationAcceptor): void {
         const containTemporalTransitions = (expression: Expression): boolean => {
             if (isTemporalCondition(expression.operand)) {
@@ -99,6 +139,7 @@ export class ArduinoMlValidator {
         }
     }
 
+    // Make sure at least two operands are present in a nested expression
     checkNestedOperandsLength(expr: NestedExpression, accept: ValidationAcceptor): void {
         const countOperands = (expression: Expression): number => {
             let operandCount = 1;
@@ -114,6 +155,7 @@ export class ArduinoMlValidator {
         }
     }
 
+    // Check for double negation
     checkDoubleNegation(expr: CompositeUnaryExpression, accept: ValidationAcceptor): void {
         const isNegation = expr.operator.operator === 'not';
         const isInnerNegation = isCompositeUnaryExpression(expr.inner) && (expr.inner as CompositeUnaryExpression).operator.operator === 'not';

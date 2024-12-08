@@ -12,7 +12,8 @@ function registerValidationChecks(services) {
         // Check if app name starts with a capital letter
         App: validator.checkNothing,
         // Prevent use of multiple "wait" at the same level of a binary expression
-        Expression: validator.checkTemporalTransitionCombination,
+        // Prevent use of the same sensor at the same level of a binary expression
+        Expression: validator.checkExpresison,
         // Prevent negation of temporal transition
         // Check for double negation
         CompositeUnaryExpression: validator.checkCompositeUnaryExpression,
@@ -26,6 +27,21 @@ exports.registerValidationChecks = registerValidationChecks;
  * Implementation of custom validations.
  */
 class ArduinoMlValidator {
+    // Prevent use of the same sensor at the same level of a binary expression
+    checkCompositeUnaryExpression(expr, accept) {
+        // Prevent negation of temporal transition
+        this.checkNegationTemporalTransition(expr, accept);
+        // Check for double negation
+        this.checkDoubleNegation(expr, accept);
+    }
+    checkExpresison(expr, accept) {
+        // Prevent use of multiple "wait" at the same level of a binary expression
+        this.checkTemporalTransitionCombination(expr, accept);
+        // Prevent use of the same sensor at the same level of a binary expression
+        this.checkSensorCombination(expr, accept);
+    }
+
+    // Check if app name starts with a capital letter
     checkNothing(app, accept) {
         if (app.name) {
             const firstChar = app.name.substring(0, 1);
@@ -34,6 +50,8 @@ class ArduinoMlValidator {
             }
         }
     }
+
+    // Prevent use of multiple "wait" at the same level of a binary expression
     checkTemporalTransitionCombination(expression, accept) {
         // Count number of temporal transition
         const countTemporalTransition = (expression) => {
@@ -51,12 +69,33 @@ class ArduinoMlValidator {
             accept('error', 'Only one temporal transition is allowed.', { node: expression, property: 'operand' });
         }
     }
-    checkCompositeUnaryExpression(expr, accept) {
-        // Prevent negation of temporal transition
-        this.checkNegationTemporalTransition(expr, accept);
-        // Check for double negation
-        this.checkDoubleNegation(expr, accept);
+
+    // Prevent use of the same sensor at the same level of a binary expression
+    checkSensorCombination(expression, accept) {
+        const isOperandSensorCondition = (0, ast_1.isSensorCondition)(expression.operand);
+        const isExpresionCompositeBinary = (0, ast_1.isCompositeBinaryExpression)(expression);
+        if (isOperandSensorCondition && isExpresionCompositeBinary) {
+            const containSameSensor = (expression, sensor) => {
+                if ((0, ast_1.isSensorCondition)(expression.operand) && expression.operand.sensor.ref === sensor) {
+                    return true;
+                }
+                if ((0, ast_1.isCompositeBinaryExpression)(expression)) {
+                    const res = containSameSensor(expression.rightOperand, sensor);
+                    if (res)
+                        return true;
+                }
+                return false;
+            };
+            const sensor = expression.operand.sensor.ref;
+            if (sensor) {
+                const containSame = containSameSensor(expression.rightOperand, sensor);
+                if (containSame) {
+                    accept('error', 'Same sensor cannot be used twice at the same level of a binary expression.', { node: expression, property: 'operand' });
+                }
+            }
+        }
     }
+    // Prevent negation of temporal transition
     checkNegationTemporalTransition(expr, accept) {
         const containTemporalTransitions = (expression) => {
             if ((0, ast_1.isTemporalCondition)(expression.operand)) {
@@ -83,6 +122,7 @@ class ArduinoMlValidator {
             }
         }
     }
+    // Make sure at least two operands are present in a nested expression
     checkNestedOperandsLength(expr, accept) {
         const countOperands = (expression) => {
             let operandCount = 1;
@@ -96,6 +136,7 @@ class ArduinoMlValidator {
             accept('error', 'Nested expression should have at least two operand.', { node: expr, property: 'nested' });
         }
     }
+    // Check for double negation
     checkDoubleNegation(expr, accept) {
         const isNegation = expr.operator.operator === 'not';
         const isInnerNegation = (0, ast_1.isCompositeUnaryExpression)(expr.inner) && expr.inner.operator.operator === 'not';

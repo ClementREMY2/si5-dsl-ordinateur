@@ -10,7 +10,7 @@ app RedButton initial state off {
 		}
 		on {
 			buzzer <= HIGH
-			not not (button is LOW) => off
+			not button is HIGH => off
 		}
 }
 

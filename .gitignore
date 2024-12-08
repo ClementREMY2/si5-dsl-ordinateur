@@ -1,2 +1,7 @@
+
+lib/
+.idea/
+
 # Langium
 **/node_modules
+

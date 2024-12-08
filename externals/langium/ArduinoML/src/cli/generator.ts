@@ -19,6 +19,17 @@ import {
 	PrimaryExpression,
 	NestedExpression,
 	isNestedExpression,
+	isPinBrick,
+	isSensor,
+	isActuator,
+	ActuatorAction,
+	isActuatorAction,
+	isScreenAction,
+	ScreenAction,
+	isScreen,
+	Screen,
+	isBusBrick,
+	ComposableString,
 } from '../language-server/generated/ast';
 import { extractDestinationAndName } from './cli-util';
 
@@ -42,8 +53,15 @@ function compile(app:App, fileNode:CompositeGeneratorNode){
     fileNode.append(
 	`
 //Wiring code generated from an ArduinoML model
-// Application name: `+app.name+`
+// Application name: `+app.name, NL);
 
+	// Only one screen is supported
+	const screen = app.bricks.find(isScreen);
+	if (screen) {
+		compileScreenDeclaration(screen, fileNode);
+	}	
+
+	fileNode.append(`
 long debounce = 200;
 enum STATE {`+app.states.map(s => s.name).join(', ')+`};
 
@@ -64,15 +82,26 @@ long `+brick.name+`LastDebounceTime = 0;
 long stateEntryTime = 0;
 	`, NL);
 
+	// Update screen variable
+	fileNode.append(`
+bool screenUpdated = false;
+	`, NL);
+
     fileNode.append(`
 	void setup(){`);
 
     for(const brick of app.bricks){
-        if ("inputPin" in brick){
-       		compileSensor(brick,fileNode);
-		}else{
-            compileActuator(brick,fileNode);
-        }
+		if (isPinBrick(brick)) {
+			if (isSensor(brick)) {
+				   compileSensor(brick,fileNode);
+			} else if (isActuator(brick)) {
+				compileActuator(brick,fileNode);
+			}
+		} else if (isBusBrick(brick)) {
+			if (isScreen(brick)) {
+				compileScreen(brick,fileNode);
+			}
+		}
 	}
 
 
@@ -94,6 +123,30 @@ long stateEntryTime = 0;
 
     }
 
+	function compileScreenDeclaration(screen: Screen, fileNode: CompositeGeneratorNode) {
+		fileNode.append(`
+#include <LiquidCrystal.h>
+		`, NL);
+
+		switch (screen.bus.value) {
+			case 'BUS1':
+				fileNode.append(`
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7, 8);
+				`, NL);
+				break;
+			case 'BUS2':
+				fileNode.append(`
+LiquidCrystal lcd(10, 11, 12, 13, 14, 15, 16);
+				`, NL);
+				break;
+			case 'BUS3':
+				fileNode.append(`
+LiquidCrystal lcd(10, 11, 12, 13, 18, 19, 1);
+				`, NL);
+				break;
+		}
+	}
+
 	function compileActuator(actuator: Actuator, fileNode: CompositeGeneratorNode) {
         fileNode.append(`
 		pinMode(`+actuator.outputPin+`, OUTPUT); // `+actuator.name+` [Actuator]`)
@@ -102,6 +155,12 @@ long stateEntryTime = 0;
 	function compileSensor(sensor:Sensor, fileNode: CompositeGeneratorNode) {
     	fileNode.append(`
 		pinMode(`+sensor.inputPin+`, INPUT); // `+sensor.name+` [Sensor]`)
+	}
+
+	function compileScreen(screen: Screen, fileNode: CompositeGeneratorNode) {
+		fileNode.append(`
+		// Screen setup
+		lcd.begin(16, 2);`);
 	}
 
     function compileState(state: State, fileNode: CompositeGeneratorNode) {
@@ -119,8 +178,52 @@ long stateEntryTime = 0;
 	
 
 	function compileAction(action: Action, fileNode:CompositeGeneratorNode) {
+		if (isActuatorAction(action)) {
+			compileActuatorAction(action, fileNode);
+		} else if (isScreenAction(action)) {
+			compileScreenAction(action, fileNode);
+		}
+	}
+
+	function compileActuatorAction(action: ActuatorAction, fileNode: CompositeGeneratorNode) {
 		fileNode.append(`
 					digitalWrite(`+action.actuator.ref?.outputPin+`,`+action.value.value+`);`)
+	}
+
+	function compileScreenAction(action: ScreenAction, fileNode: CompositeGeneratorNode) {
+		const generateString = (composableString: ComposableString) => {
+			// create string declaration
+			let res = "\"" + composableString.string + "\"";
+
+			if (composableString.sensor) {
+				res += ` + String(digitalRead(` + composableString.sensor.ref?.inputPin + `) == HIGH ? "ON" : "OFF")`;
+			}
+
+			if (composableString.actuator) {
+				res += ` + String(digitalRead(` + composableString.actuator.ref?.outputPin + `) == HIGH ? "ON" : "OFF")`;
+			}
+
+			if (composableString.next) {
+				res += ' + ' + generateString(composableString.next);
+			}
+
+			return res;
+		};
+
+
+		fileNode.append(`
+					if (!screenUpdated) {
+						lcd.clear();
+						String msg = ${generateString(action.value)};
+						String firstLine = msg.substring(0, 16);
+						String secondLine = msg.substring(16, 32);
+						lcd.setCursor(0, 0);
+						lcd.print(firstLine);
+						lcd.setCursor(0, 1);
+						lcd.print(secondLine);
+						screenUpdated = true;
+					}`
+		);
 	}
 
 	function compileTransition(transition: Transition, fileNode: CompositeGeneratorNode) {
@@ -141,6 +244,7 @@ long stateEntryTime = 0;
 
 		fileNode.append(`) {
 							currentState = ${transition.next.ref?.name};
+							screenUpdated = false;
 							stateEntryTime = millis();`);
 		compileDebounceTime(sensors, fileNode);
 

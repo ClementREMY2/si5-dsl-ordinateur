@@ -6,12 +6,36 @@
 /* eslint-disable */
 import { AstNode, AbstractAstReflection, Reference, ReferenceInfo, TypeMetaData } from 'langium';
 
-export type Brick = Actuator | Sensor;
+export type Action = ActuatorAction | ScreenAction;
+
+export const Action = 'Action';
+
+export function isAction(item: unknown): item is Action {
+    return reflection.isInstance(item, Action);
+}
+
+export type Brick = BusBrick | PinBrick;
 
 export const Brick = 'Brick';
 
 export function isBrick(item: unknown): item is Brick {
     return reflection.isInstance(item, Brick);
+}
+
+export type BusBrick = Screen;
+
+export const BusBrick = 'BusBrick';
+
+export function isBusBrick(item: unknown): item is BusBrick {
+    return reflection.isInstance(item, BusBrick);
+}
+
+export type PinBrick = Actuator | Sensor;
+
+export const PinBrick = 'PinBrick';
+
+export function isPinBrick(item: unknown): item is PinBrick {
+    return reflection.isInstance(item, PinBrick);
 }
 
 export type PrimaryExpression = CompositeUnaryExpression | NestedExpression | SensorCondition | TemporalCondition;
@@ -20,19 +44,6 @@ export const PrimaryExpression = 'PrimaryExpression';
 
 export function isPrimaryExpression(item: unknown): item is PrimaryExpression {
     return reflection.isInstance(item, PrimaryExpression);
-}
-
-export interface Action extends AstNode {
-    readonly $container: State;
-    readonly $type: 'Action';
-    actuator: Reference<Actuator>
-    value: Signal
-}
-
-export const Action = 'Action';
-
-export function isAction(item: unknown): item is Action {
-    return reflection.isInstance(item, Action);
 }
 
 export interface Actuator extends AstNode {
@@ -46,6 +57,19 @@ export const Actuator = 'Actuator';
 
 export function isActuator(item: unknown): item is Actuator {
     return reflection.isInstance(item, Actuator);
+}
+
+export interface ActuatorAction extends AstNode {
+    readonly $container: State;
+    readonly $type: 'ActuatorAction';
+    actuator: Reference<Actuator>
+    value: Signal
+}
+
+export const ActuatorAction = 'ActuatorAction';
+
+export function isActuatorAction(item: unknown): item is ActuatorAction {
+    return reflection.isInstance(item, ActuatorAction);
 }
 
 export interface App extends AstNode {
@@ -72,6 +96,33 @@ export const BinaryOperator = 'BinaryOperator';
 
 export function isBinaryOperator(item: unknown): item is BinaryOperator {
     return reflection.isInstance(item, BinaryOperator);
+}
+
+export interface Bus extends AstNode {
+    readonly $container: Screen;
+    readonly $type: 'Bus';
+    value: string
+}
+
+export const Bus = 'Bus';
+
+export function isBus(item: unknown): item is Bus {
+    return reflection.isInstance(item, Bus);
+}
+
+export interface ComposableString extends AstNode {
+    readonly $container: ComposableString | ScreenAction;
+    readonly $type: 'ComposableString';
+    actuator?: Reference<Actuator>
+    next?: ComposableString
+    sensor?: Reference<Sensor>
+    string: string
+}
+
+export const ComposableString = 'ComposableString';
+
+export function isComposableString(item: unknown): item is ComposableString {
+    return reflection.isInstance(item, ComposableString);
 }
 
 export interface CompositeUnaryExpression extends AstNode {
@@ -111,6 +162,32 @@ export function isNestedExpression(item: unknown): item is NestedExpression {
     return reflection.isInstance(item, NestedExpression);
 }
 
+export interface Screen extends AstNode {
+    readonly $container: App;
+    readonly $type: 'Screen';
+    bus: Bus
+    name: string
+}
+
+export const Screen = 'Screen';
+
+export function isScreen(item: unknown): item is Screen {
+    return reflection.isInstance(item, Screen);
+}
+
+export interface ScreenAction extends AstNode {
+    readonly $container: State;
+    readonly $type: 'ScreenAction';
+    screen: Reference<Screen>
+    value: ComposableString
+}
+
+export const ScreenAction = 'ScreenAction';
+
+export function isScreenAction(item: unknown): item is ScreenAction {
+    return reflection.isInstance(item, ScreenAction);
+}
+
 export interface Sensor extends AstNode {
     readonly $container: App;
     readonly $type: 'Sensor';
@@ -138,7 +215,7 @@ export function isSensorCondition(item: unknown): item is SensorCondition {
 }
 
 export interface Signal extends AstNode {
-    readonly $container: Action | SensorCondition;
+    readonly $container: ActuatorAction | SensorCondition;
     readonly $type: 'Signal';
     value: string
 }
@@ -216,14 +293,21 @@ export function isCompositeBinaryExpression(item: unknown): item is CompositeBin
 export interface ArduinoMlAstType {
     Action: Action
     Actuator: Actuator
+    ActuatorAction: ActuatorAction
     App: App
     BinaryOperator: BinaryOperator
     Brick: Brick
+    Bus: Bus
+    BusBrick: BusBrick
+    ComposableString: ComposableString
     CompositeBinaryExpression: CompositeBinaryExpression
     CompositeUnaryExpression: CompositeUnaryExpression
     Expression: Expression
     NestedExpression: NestedExpression
+    PinBrick: PinBrick
     PrimaryExpression: PrimaryExpression
+    Screen: Screen
+    ScreenAction: ScreenAction
     Sensor: Sensor
     SensorCondition: SensorCondition
     Signal: Signal
@@ -236,14 +320,18 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
+        return ['Action', 'Actuator', 'ActuatorAction', 'App', 'BinaryOperator', 'Brick', 'Bus', 'BusBrick', 'ComposableString', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PinBrick', 'PrimaryExpression', 'Screen', 'ScreenAction', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
         switch (subtype) {
             case Actuator:
             case Sensor: {
-                return this.isSubtype(Brick, supertype);
+                return this.isSubtype(PinBrick, supertype);
+            }
+            case ActuatorAction:
+            case ScreenAction: {
+                return this.isSubtype(Action, supertype);
             }
             case CompositeUnaryExpression:
             case NestedExpression:
@@ -251,8 +339,15 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
             case TemporalCondition: {
                 return this.isSubtype(PrimaryExpression, supertype);
             }
+            case Screen: {
+                return this.isSubtype(BusBrick, supertype);
+            }
             case CompositeBinaryExpression: {
                 return this.isSubtype(Expression, supertype);
+            }
+            case BusBrick:
+            case PinBrick: {
+                return this.isSubtype(Brick, supertype);
             }
             default: {
                 return false;
@@ -263,15 +358,20 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
     getReferenceType(refInfo: ReferenceInfo): string {
         const referenceId = `${refInfo.container.$type}:${refInfo.property}`;
         switch (referenceId) {
-            case 'Action:actuator': {
+            case 'ActuatorAction:actuator':
+            case 'ComposableString:actuator': {
                 return Actuator;
             }
             case 'App:initial':
             case 'Transition:next': {
                 return State;
             }
+            case 'ComposableString:sensor':
             case 'SensorCondition:sensor': {
                 return Sensor;
+            }
+            case 'ScreenAction:screen': {
+                return Screen;
             }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);

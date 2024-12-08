@@ -1,0 +1,16 @@
+app RedButton initial state off {
+	bricks
+		Sensor button1 : 11
+		Screen lcd : BUS1
+	
+	states
+		off {
+			lcd <= "valeur state off : " + button1
+			wait 1000 ms => on
+		}
+		on {
+			lcd <= "valeur state on : " + button1
+			wait 1000 ms => off
+		}
+}
+

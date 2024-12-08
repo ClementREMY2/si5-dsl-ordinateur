@@ -4,29 +4,44 @@
  * DO NOT EDIT MANUALLY!
  ******************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reflection = exports.ArduinoMlAstReflection = exports.isCompositeBinaryExpression = exports.CompositeBinaryExpression = exports.isUnaryOperator = exports.UnaryOperator = exports.isTransition = exports.Transition = exports.isTemporalCondition = exports.TemporalCondition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensorCondition = exports.SensorCondition = exports.isSensor = exports.Sensor = exports.isNestedExpression = exports.NestedExpression = exports.isExpression = exports.Expression = exports.isCompositeUnaryExpression = exports.CompositeUnaryExpression = exports.isBinaryOperator = exports.BinaryOperator = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isPrimaryExpression = exports.PrimaryExpression = exports.isBrick = exports.Brick = void 0;
+exports.reflection = exports.ArduinoMlAstReflection = exports.isCompositeBinaryExpression = exports.CompositeBinaryExpression = exports.isUnaryOperator = exports.UnaryOperator = exports.isTransition = exports.Transition = exports.isTemporalCondition = exports.TemporalCondition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensorCondition = exports.SensorCondition = exports.isSensor = exports.Sensor = exports.isScreenAction = exports.ScreenAction = exports.isScreen = exports.Screen = exports.isNestedExpression = exports.NestedExpression = exports.isExpression = exports.Expression = exports.isCompositeUnaryExpression = exports.CompositeUnaryExpression = exports.isComposableString = exports.ComposableString = exports.isBus = exports.Bus = exports.isBinaryOperator = exports.BinaryOperator = exports.isApp = exports.App = exports.isActuatorAction = exports.ActuatorAction = exports.isActuator = exports.Actuator = exports.isPrimaryExpression = exports.PrimaryExpression = exports.isPinBrick = exports.PinBrick = exports.isBusBrick = exports.BusBrick = exports.isBrick = exports.Brick = exports.isAction = exports.Action = void 0;
 /* eslint-disable */
 const langium_1 = require("langium");
-exports.Brick = 'Brick';
-function isBrick(item) {
-    return exports.reflection.isInstance(item, exports.Brick);
-}
-exports.isBrick = isBrick;
-exports.PrimaryExpression = 'PrimaryExpression';
-function isPrimaryExpression(item) {
-    return exports.reflection.isInstance(item, exports.PrimaryExpression);
-}
-exports.isPrimaryExpression = isPrimaryExpression;
 exports.Action = 'Action';
 function isAction(item) {
     return exports.reflection.isInstance(item, exports.Action);
 }
 exports.isAction = isAction;
+exports.Brick = 'Brick';
+function isBrick(item) {
+    return exports.reflection.isInstance(item, exports.Brick);
+}
+exports.isBrick = isBrick;
+exports.BusBrick = 'BusBrick';
+function isBusBrick(item) {
+    return exports.reflection.isInstance(item, exports.BusBrick);
+}
+exports.isBusBrick = isBusBrick;
+exports.PinBrick = 'PinBrick';
+function isPinBrick(item) {
+    return exports.reflection.isInstance(item, exports.PinBrick);
+}
+exports.isPinBrick = isPinBrick;
+exports.PrimaryExpression = 'PrimaryExpression';
+function isPrimaryExpression(item) {
+    return exports.reflection.isInstance(item, exports.PrimaryExpression);
+}
+exports.isPrimaryExpression = isPrimaryExpression;
 exports.Actuator = 'Actuator';
 function isActuator(item) {
     return exports.reflection.isInstance(item, exports.Actuator);
 }
 exports.isActuator = isActuator;
+exports.ActuatorAction = 'ActuatorAction';
+function isActuatorAction(item) {
+    return exports.reflection.isInstance(item, exports.ActuatorAction);
+}
+exports.isActuatorAction = isActuatorAction;
 exports.App = 'App';
 function isApp(item) {
     return exports.reflection.isInstance(item, exports.App);
@@ -37,6 +52,16 @@ function isBinaryOperator(item) {
     return exports.reflection.isInstance(item, exports.BinaryOperator);
 }
 exports.isBinaryOperator = isBinaryOperator;
+exports.Bus = 'Bus';
+function isBus(item) {
+    return exports.reflection.isInstance(item, exports.Bus);
+}
+exports.isBus = isBus;
+exports.ComposableString = 'ComposableString';
+function isComposableString(item) {
+    return exports.reflection.isInstance(item, exports.ComposableString);
+}
+exports.isComposableString = isComposableString;
 exports.CompositeUnaryExpression = 'CompositeUnaryExpression';
 function isCompositeUnaryExpression(item) {
     return exports.reflection.isInstance(item, exports.CompositeUnaryExpression);
@@ -52,6 +77,16 @@ function isNestedExpression(item) {
     return exports.reflection.isInstance(item, exports.NestedExpression);
 }
 exports.isNestedExpression = isNestedExpression;
+exports.Screen = 'Screen';
+function isScreen(item) {
+    return exports.reflection.isInstance(item, exports.Screen);
+}
+exports.isScreen = isScreen;
+exports.ScreenAction = 'ScreenAction';
+function isScreenAction(item) {
+    return exports.reflection.isInstance(item, exports.ScreenAction);
+}
+exports.isScreenAction = isScreenAction;
 exports.Sensor = 'Sensor';
 function isSensor(item) {
     return exports.reflection.isInstance(item, exports.Sensor);
@@ -94,13 +129,17 @@ function isCompositeBinaryExpression(item) {
 exports.isCompositeBinaryExpression = isCompositeBinaryExpression;
 class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
     getAllTypes() {
-        return ['Action', 'Actuator', 'App', 'BinaryOperator', 'Brick', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PrimaryExpression', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
+        return ['Action', 'Actuator', 'ActuatorAction', 'App', 'BinaryOperator', 'Brick', 'Bus', 'BusBrick', 'ComposableString', 'CompositeBinaryExpression', 'CompositeUnaryExpression', 'Expression', 'NestedExpression', 'PinBrick', 'PrimaryExpression', 'Screen', 'ScreenAction', 'Sensor', 'SensorCondition', 'Signal', 'State', 'TemporalCondition', 'Transition', 'UnaryOperator'];
     }
     computeIsSubtype(subtype, supertype) {
         switch (subtype) {
             case exports.Actuator:
             case exports.Sensor: {
-                return this.isSubtype(exports.Brick, supertype);
+                return this.isSubtype(exports.PinBrick, supertype);
+            }
+            case exports.ActuatorAction:
+            case exports.ScreenAction: {
+                return this.isSubtype(exports.Action, supertype);
             }
             case exports.CompositeUnaryExpression:
             case exports.NestedExpression:
@@ -108,8 +147,15 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
             case exports.TemporalCondition: {
                 return this.isSubtype(exports.PrimaryExpression, supertype);
             }
+            case exports.Screen: {
+                return this.isSubtype(exports.BusBrick, supertype);
+            }
             case exports.CompositeBinaryExpression: {
                 return this.isSubtype(exports.Expression, supertype);
+            }
+            case exports.BusBrick:
+            case exports.PinBrick: {
+                return this.isSubtype(exports.Brick, supertype);
             }
             default: {
                 return false;
@@ -119,15 +165,20 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
     getReferenceType(refInfo) {
         const referenceId = `${refInfo.container.$type}:${refInfo.property}`;
         switch (referenceId) {
-            case 'Action:actuator': {
+            case 'ActuatorAction:actuator':
+            case 'ComposableString:actuator': {
                 return exports.Actuator;
             }
             case 'App:initial':
             case 'Transition:next': {
                 return exports.State;
             }
+            case 'ComposableString:sensor':
             case 'SensorCondition:sensor': {
                 return exports.Sensor;
+            }
+            case 'ScreenAction:screen': {
+                return exports.Screen;
             }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);

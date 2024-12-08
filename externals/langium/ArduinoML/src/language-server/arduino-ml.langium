@@ -13,15 +13,22 @@ entry App:
 	'}';
 
 Brick :
+	(PinBrick | BusBrick);
+
+PinBrick:
 	(Actuator | Sensor);
 
+BusBrick:
+	Screen;
+
 Actuator:
-	{infer Actuator}
 	'Actuator' name=ID ':' outputPin=INT;
 
 Sensor :
-	{infer Sensor}
 	'Sensor'  name=ID ':' inputPin=INT;
+
+Screen:
+	'Screen' name=ID ':' bus=Bus;
 	
 State :
 	name=ID '{'
@@ -31,7 +38,16 @@ State :
 
 
 Action :
+	(ActuatorAction | ScreenAction);
+
+ActuatorAction :
 	actuator=[Actuator:ID] '<=' value=Signal;
+
+ScreenAction :
+	screen=[Screen:ID] '<=' value=ComposableString;
+
+ComposableString:
+	string=STRING ('+' sensor=[Sensor:ID])? ('+' actuator=[Actuator:ID])? ('+' next=ComposableString)?;
 
 Transition :
 	condition=Expression '=>' next=[State:ID];
@@ -70,6 +86,12 @@ Signal:
     value=(HIGH | LOW);
 terminal HIGH : 'HIGH';
 terminal LOW : 'LOW';
+
+Bus:
+	value=(BUS1 | BUS2 | BUS3);
+terminal BUS1 : 'BUS1';
+terminal BUS2 : 'BUS2';
+terminal BUS3 : 'BUS3';
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

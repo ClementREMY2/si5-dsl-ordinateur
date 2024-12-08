@@ -1,0 +1,8 @@
+# Eclipse
+.metadata
+.recommenders
+GroovuinoML/.settings
+GroovuinoML/.classpath
+GroovuinoML/.project
+target
+lib/

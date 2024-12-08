@@ -35,7 +35,6 @@ State :
 		(actions+=Action)* 
 		transitions+=Transition
 		(transitions+=Transition)*
-
 	'}';
 
 

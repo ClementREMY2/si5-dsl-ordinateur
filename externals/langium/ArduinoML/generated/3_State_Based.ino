@@ -14,6 +14,9 @@ long buttonLastDebounceTime = 0;
 long stateEntryTime = 0;
 	
 
+bool screenUpdated = false;
+	
+
 	void setup(){
 		pinMode(12, OUTPUT); // red_led [Actuator]
 		pinMode(9, INPUT); // button [Sensor]
@@ -28,6 +31,7 @@ long stateEntryTime = 0;
 					if (buttonBounceGuard) {
 						if (digitalRead(9) == LOW) {
 							currentState = off;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							buttonLastDebounceTime = millis();
 						}
@@ -38,6 +42,7 @@ long stateEntryTime = 0;
 					if (buttonBounceGuard) {
 						if (digitalRead(9) == HIGH) {
 							currentState = start_on;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							buttonLastDebounceTime = millis();
 						}
@@ -49,6 +54,7 @@ long stateEntryTime = 0;
 					if (buttonBounceGuard) {
 						if (digitalRead(9) == LOW) {
 							currentState = on;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							buttonLastDebounceTime = millis();
 						}
@@ -59,6 +65,7 @@ long stateEntryTime = 0;
 					if (buttonBounceGuard) {
 						if (digitalRead(9) == HIGH) {
 							currentState = start_off;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							buttonLastDebounceTime = millis();
 						}

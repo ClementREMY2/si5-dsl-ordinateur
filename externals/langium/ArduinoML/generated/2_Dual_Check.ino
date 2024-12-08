@@ -18,6 +18,9 @@ long button1LastDebounceTime = 0;
 long stateEntryTime = 0;
 	
 
+bool screenUpdated = false;
+	
+
 	void setup(){
 		pinMode(11, OUTPUT); // buzzer [Actuator]
 		pinMode(10, INPUT); // button2 [Sensor]
@@ -34,6 +37,7 @@ long stateEntryTime = 0;
 					if (button1BounceGuard && button2BounceGuard) {
 						if (digitalRead(9) == HIGH && digitalRead(10) == HIGH) {
 							currentState = on;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							button1LastDebounceTime = millis();
 							button2LastDebounceTime = millis();
@@ -47,6 +51,7 @@ long stateEntryTime = 0;
 					if (button1BounceGuard && button2BounceGuard) {
 						if (digitalRead(9) == LOW || digitalRead(10) == LOW) {
 							currentState = off;
+							screenUpdated = false;
 							stateEntryTime = millis();
 							button1LastDebounceTime = millis();
 							button2LastDebounceTime = millis();
